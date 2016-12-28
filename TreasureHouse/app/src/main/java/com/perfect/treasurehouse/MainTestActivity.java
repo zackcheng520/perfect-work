@@ -1,13 +1,19 @@
 package com.perfect.treasurehouse;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.webkit.WebView;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.Button;
+import android.widget.Spinner;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -27,7 +33,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.TreeMap;
+import java.util.logging.Filter;
 
 import static android.R.attr.entries;
 
@@ -41,6 +49,7 @@ public class MainTestActivity extends Activity {
 
     TableLayout tableLayout;
     TableLayout tableLayoutSubArea;
+    Spinner urlSelectSp;
     private Map<String, ?> global_area_map = new HashMap<String, String>();
 
     private Map<String, ?> sub_area_value_map = new HashMap<String, String>();
@@ -49,29 +58,54 @@ public class MainTestActivity extends Activity {
     private Map<String, String> sub_area_group_with_global_map = new LinkedHashMap<String, String>();
     private Map<String, String> sub_area_group_with_global_treemap = new TreeMap<String, String>();
 
+    public String URL_GJ = "http://www.xunbao178.com/wmgj";
+    public String URL_SJ = "http://www.xunbao178.com/wmsj";
+    public String URL_ZX = "http://www.xunbao178.com/zx";
+
+    private final String action = "com.perfect.treasurehouse.ACTION_DATA_SAVE_DONE";
+
+    final Object netLock = new Object();
+    GameRegional gr;
+    GameSubArea gs;
+    DataSaveDoneReceiver mDataSaveDoneReceiver;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_test);
 
+        mDataSaveDoneReceiver = new DataSaveDoneReceiver();
+        registerReceiver(mDataSaveDoneReceiver, new IntentFilter(action));
         mContext = getApplicationContext();
-        textView = (TextView) findViewById(R.id.textView);
         tableLayout = (TableLayout) findViewById(R.id.tableLayout);
         tableLayoutSubArea = (TableLayout) findViewById(R.id.tableLayoutSubArea);
+        urlSelectSp = (Spinner) findViewById(R.id.spinner_url_select);
         tableLayout.setStretchAllColumns(true);
-        GameRegional gr = new GameRegional(mContext);
-        gr.init();
-        GameSubArea gs = new GameSubArea(mContext);
-        gs.init();
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        initMapVal();
-        initGlobalView();
-    }
+        gr = new GameRegional(mContext);
+        gs = new GameSubArea(mContext);
+        initSpinnerValue();
 
+    }
+    private synchronized void initAreaDateFromWWW(String web_url){
+        TLog.i("init Web site" + web_url);
+        gr.init(web_url);
+        gs.init(web_url);
+
+    }
+    private void initSpinnerValue(){
+        urlSelectSp.setOnItemSelectedListener(new OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                TLog.d("onItemSelect change");
+                gr.clearSharedPreference();
+                gs.clearSharedPreference();
+                initAreaDateFromWWW(urlSelectSp.getSelectedItem().toString());
+            }
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                // Another interface callback
+            }
+        });
+    }
     private void initMapVal() {
         global_area_map = getAreaInfoMap("global_area");
         sub_area_value_map = getAreaInfoMap("sub_area_name");
@@ -86,6 +120,7 @@ public class MainTestActivity extends Activity {
 
     @Override
     public void onStop() {
+        unregisterReceiver(mDataSaveDoneReceiver);
         super.onStop();
     }
 
@@ -93,12 +128,13 @@ public class MainTestActivity extends Activity {
         SharedPreferences sp = mContext.getSharedPreferences(tableName,
                 Context.MODE_PRIVATE);
 
-        TLog.d("ed = " + sp.getAll());
+        TLog.d("ed = " + sp.getAll().toString());
         return sp.getAll();
     }
 
     private void initGlobalView() {
         TableRow tr = new TableRow(this);
+        tableLayout.removeAllViews();
         if(global_area_map.size() == 0) {
             TLog.d("no found area");
             return;
@@ -175,7 +211,14 @@ public class MainTestActivity extends Activity {
         for (Map.Entry<String, String> entry : sub_area_group_with_global_map.entrySet()) {
             TLog.d("key = " + entry.getKey() + " ;value = " + entry.getValue());
         }
-
+    }
+    private class DataSaveDoneReceiver extends BroadcastReceiver{
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            TLog.d("Intent action = " + intent.getAction());
+            initMapVal();
+            initGlobalView();
+        }
     }
 
 }

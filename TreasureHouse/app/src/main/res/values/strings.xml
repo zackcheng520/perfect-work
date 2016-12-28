@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">TreasureHouse</string>
+    <string-array name="web_url">
+        <item>http://www.xunbao178.com/wmgj</item>
+        <item>http://www.xunbao178.com/wmsj</item>
+        <item>http://www.xunbao178.com/zx</item>
+    </string-array>
 </resources>

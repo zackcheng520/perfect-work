@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static android.R.attr.value;
+import static android.provider.ContactsContract.CommonDataKinds.Website.URL;
 
 /**
  * Created by Zack on 2016/12/23.
@@ -29,12 +30,14 @@ public class GameSubArea extends GameAreaAbstract {
     private List sub_area = new ArrayList();
     private List sub_areaLink = new ArrayList();
     private List sub_areaGroup = new ArrayList();
+    private String[] stringsTables = new String[]{"sub_area_name", "sub_area_link", "sub_area_group"};
+
     public GameSubArea(Context context) {
         mContext = context;
         TLog.i("GameSubArea Init");
     }
 
-    public void init() {
+    public void init(String URL) {
         gameRegional = new HttpRequestDataEntity(URL, ELEMENT_TAG,
                 ELEMENT_VALUE, ELEMENT_KEY, HREF_TAG, this);
         TLog.d("test start");
@@ -47,11 +50,11 @@ public class GameSubArea extends GameAreaAbstract {
         sub_area = area;
         sub_areaLink = areaLink;
         sub_areaGroup = areaGroup;
-        SharedPreferences spName = mContext.getSharedPreferences("sub_area_name",
+        SharedPreferences spName = mContext.getSharedPreferences(stringsTables[0],
                 Context.MODE_PRIVATE);
-        SharedPreferences spLink = mContext.getSharedPreferences("sub_area_link",
+        SharedPreferences spLink = mContext.getSharedPreferences(stringsTables[1],
                 Context.MODE_PRIVATE);
-        SharedPreferences spGroup = mContext.getSharedPreferences("sub_area_group",
+        SharedPreferences spGroup = mContext.getSharedPreferences(stringsTables[2],
                 Context.MODE_PRIVATE);
         Editor editorName = spName.edit();
         Editor editoLinkr = spLink.edit();
@@ -70,5 +73,20 @@ public class GameSubArea extends GameAreaAbstract {
     private void saveToSharedPreference(Editor ed, String value, int key){
         ed.putString(Integer.toString(key), value.toString());
         ed.commit();
+    }
+    public void clearSharedPreference(){
+        for (int i = 0; i < 3; i++) {//3 tables
+            clearAllSharedPreference(stringsTables[i]);
+        }
+    }
+    public void clearAllSharedPreference(String tables){
+        SharedPreferences sp = mContext.getSharedPreferences(tables,
+                Context.MODE_PRIVATE);
+        Editor ed = sp.edit();
+        ed.clear();
+        ed.commit();
+    }
+    public Context getContext(){
+        return mContext;
     }
 }

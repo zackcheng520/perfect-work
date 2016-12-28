@@ -1,5 +1,6 @@
 package com.perfect.treasurehouse.HttpRequest;
 
+import android.content.Intent;
 import android.os.AsyncTask;
 
 import com.perfect.treasurehouse.area.GameAreaAbstract;
@@ -99,6 +100,7 @@ public class HttpRequestDataEntity extends HttpRequestDataEntityAbstract{
         //onPostExecute方法用于在执行完后台任务后更新UI,显示结果
         @Override
         protected void onPostExecute(String s) {
+            super.onPostExecute(s);
             //GameRegional gr = new GameRegional();
             TLog.d("mListOfContents size = " + mListOfContents.size() + "; mListOfHrefContents size = " + mListOfHrefContents.size());
             if (mListOfContents.size() > 0 && mListOfHrefContents.size() <= 0) {
@@ -106,8 +108,11 @@ public class HttpRequestDataEntity extends HttpRequestDataEntityAbstract{
             } else if (mListOfContents.size() > 0 && mListOfContents.size() > 0) {
                 mGaa.saveAreaToXML(mListOfContents, mListOfHrefContents, mListOfHrefContentsClass);
             }
+            TLog.d("onPostExcute saveXML done");
+            String action = "com.perfect.treasurehouse.ACTION_DATA_SAVE_DONE";
+            Intent intent = new Intent(action);
+            mGaa.getContext().sendBroadcast(intent);
 
-            super.onPostExecute(s);
         }
 
         //onCancelled方法用于在取消执行中的任务时更改UI

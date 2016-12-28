@@ -10,12 +10,14 @@ import com.perfect.treasurehouse.utils.TLog;
 import java.util.ArrayList;
 import java.util.List;
 
+import static android.provider.ContactsContract.CommonDataKinds.Website.URL;
+
 /**
  * Created by Zack on 2016/12/22.
  */
 
 public class GameRegional extends GameAreaAbstract {
-    private Context mContext;
+    public Context mContext;
     private String ELEMENT_TAG = "span";
     private String ELEMENT_VALUE = "ser_area_nav_special";
     private String ELEMENT_KEY = "class";
@@ -32,7 +34,7 @@ public class GameRegional extends GameAreaAbstract {
         TLog.i("GameRegional Init");
     }
 
-    public void init() {
+    public void init(String URL) {
         gameRegional = new HttpRequestDataEntity(URL, ELEMENT_TAG,
                 ELEMENT_VALUE, ELEMENT_KEY, this);
         TLog.d("test start");
@@ -53,5 +55,15 @@ public class GameRegional extends GameAreaAbstract {
 
     public void saveAreaToXML(List area, List areaLink, List areaGroup) {
         TLog.d("saveAreaToXML nothing to do it");
+    }
+    public void clearSharedPreference(){
+        SharedPreferences sp = mContext.getSharedPreferences("global_area",
+                Context.MODE_PRIVATE);
+        Editor ed = sp.edit();
+        ed.clear();
+        ed.commit();
+    }
+    public Context getContext(){
+        return mContext;
     }
 }
