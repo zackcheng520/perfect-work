@@ -122,7 +122,7 @@ public class HttpRequestDataEntity extends HttpRequestDataEntityAbstract{
         }
     }
 
-    public void parseHttpData(Document doc, boolean isLink) {
+    public void parseHttpData(Object doc, boolean isLink) {
         if (isLink) {
             for (Element element : mListElements) {
                 Elements links = element.getElementsByTag(mHrefTag);

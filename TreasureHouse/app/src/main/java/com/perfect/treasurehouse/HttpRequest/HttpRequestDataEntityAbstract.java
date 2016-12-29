@@ -9,5 +9,5 @@ import org.jsoup.nodes.Document;
 public abstract class HttpRequestDataEntityAbstract {
     public int EMPTY_STRING = 0;
     public abstract void getRequestWebSiteTargetContent();
-    public abstract void parseHttpData(Document doc, boolean isLink);
+    public abstract void parseHttpData(Object doc, boolean isLink);
 }

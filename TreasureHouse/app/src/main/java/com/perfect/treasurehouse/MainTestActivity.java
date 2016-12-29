@@ -58,11 +58,13 @@ public class MainTestActivity extends Activity {
     private Map<String, String> sub_area_group_with_global_map = new LinkedHashMap<String, String>();
     private Map<String, String> sub_area_group_with_global_treemap = new TreeMap<String, String>();
 
-    public String URL_GJ = "http://www.xunbao178.com/wmgj";
-    public String URL_SJ = "http://www.xunbao178.com/wmsj";
-    public String URL_ZX = "http://www.xunbao178.com/zx";
+    public final String URL_GJ = "http://www.xunbao178.com/wmgj";
+    public final String URL_SJ = "http://www.xunbao178.com/wmsj";
+    public final String URL_ZX = "http://www.xunbao178.com/zx";
 
     private final String action = "com.perfect.treasurehouse.ACTION_DATA_SAVE_DONE";
+
+    private String webUrl;
 
     final Object netLock = new Object();
     GameRegional gr;
@@ -74,7 +76,7 @@ public class MainTestActivity extends Activity {
         setContentView(R.layout.activity_main_test);
 
         mDataSaveDoneReceiver = new DataSaveDoneReceiver();
-        registerReceiver(mDataSaveDoneReceiver, new IntentFilter(action));
+
         mContext = getApplicationContext();
         tableLayout = (TableLayout) findViewById(R.id.tableLayout);
         tableLayoutSubArea = (TableLayout) findViewById(R.id.tableLayoutSubArea);
@@ -87,6 +89,7 @@ public class MainTestActivity extends Activity {
     }
     private synchronized void initAreaDateFromWWW(String web_url){
         TLog.i("init Web site" + web_url);
+        webUrl = web_url;
         gr.init(web_url);
         gs.init(web_url);
 
@@ -120,14 +123,19 @@ public class MainTestActivity extends Activity {
 
     @Override
     public void onStop() {
-        unregisterReceiver(mDataSaveDoneReceiver);
         super.onStop();
+        unregisterReceiver(mDataSaveDoneReceiver);
+    }
+    @Override
+    public void onResume() {
+        super.onResume();
+        registerReceiver(mDataSaveDoneReceiver, new IntentFilter(action));
+
     }
 
     private Map<String, ?> getAreaInfoMap(String tableName) {
         SharedPreferences sp = mContext.getSharedPreferences(tableName,
                 Context.MODE_PRIVATE);
-
         TLog.d("ed = " + sp.getAll().toString());
         return sp.getAll();
     }
@@ -177,12 +185,30 @@ public class MainTestActivity extends Activity {
                     LayoutParams.MATCH_PARENT, 1.0f);
             bn.setLayoutParams(param);
             bn.setText(entry.getValue());
+            bn.setId(Integer.parseInt(entry.getKey()));
+            bn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    goToShowAreaCommodity(getSubAreaCommodityUrl(Integer.toString(v.getId())));
+                }
+            });
             tr.addView(bn);
         }
         tableLayoutSubArea.addView(tr);
-
     }
-
+    private String getSubAreaCommodityUrl(String key){
+        String commodityUrl = "";
+        commodityUrl = webUrl +"/"+ sub_area_link_map.get(key).toString();
+        TLog.d("CommodityUrl key = " + key +" ; commodityUrl = " + commodityUrl);
+        return commodityUrl;
+    }
+    private void goToShowAreaCommodity(String subUrl){
+        Intent intent = new Intent();
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.putExtra("subarea_commodity_url", subUrl);
+        intent.setClassName("com.perfect.treasurehouse","com.perfect.treasurehouse.CommodityTestActivity");
+        mContext.startActivity(intent);
+    }
     private void subAreaInfoGroup(String key) {
         TLog.i("key = " + key);
         sub_area_group_with_global_map.clear();
